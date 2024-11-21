@@ -1,12 +1,12 @@
 <!-- layouts/admin.vue -->
 <template>
-  <a-layout class="min-h-screen">
+  <ALayout class="min-h-screen">
     <!-- Header -->
     <ALayoutHeader class="flex items-center justify-between px-6">
       <div class="flex items-center">
         <!-- Logo -->
         <div class="flex items-center mr-8">
-          <!--          <img src="/api/placeholder/40/40" alt="GonPay Logo" class="h-8 w-8 mr-2"/>-->
+<!--          <img src="/api/placeholder/40/40" alt="GonPay Logo" class="h-8 w-8 mr-2"/>-->
           <span class="text-xl font-bold text-emerald-500">GonPay Admin</span>
         </div>
 
@@ -70,7 +70,7 @@
             <template #icon>
               <DashboardOutlined/>
             </template>
-            <RouterLink to="/admin/dashboard">Dashboard</RouterLink>
+            <RouterLink to="/">Dashboard</RouterLink>
           </AMenuItem>
 
           <!-- User Management -->
@@ -97,23 +97,19 @@
               <RouterLink to="/admin/wallets">Danh sách ví</RouterLink>
             </AMenuItem>
             <AMenuItem key="wallets-transactions">
-              <RouterLink to="/admin/transactions">Lịch sử giao dịch</RouterLink>
+              <RouterLink to="/admin/wallets/transactions">Lịch sử giao dịch</RouterLink>
             </AMenuItem>
           </ASubMenu>
 
           <!-- Payment Methods -->
-          <ASubMenu key="payments">
+
+          <AMenuItem key="payments">
             <template #icon>
               <CreditCardOutlined/>
             </template>
-            <template #title>Phương thức thanh toán</template>
-            <AMenuItem key="payment-methods">
-              <RouterLink to="/admin/payment-methods">Danh sách phương thức</RouterLink>
-            </AMenuItem>
-            <AMenuItem key="payment-settings">
-              <RouterLink to="/admin/payment-settings">Cấu hình</RouterLink>
-            </AMenuItem>
-          </ASubMenu>
+            <RouterLink to="/admin/payment-methods">Phương thức thanh toán </RouterLink>
+          </AMenuItem>
+
 
           <!-- Beneficiaries -->
           <AMenuItem key="beneficiaries">
@@ -164,23 +160,23 @@
       </ALayoutSider>
 
       <!-- Main Content -->
-      <a-layout-content class="p-6 bg-gray-50">
+      <ALayoutContent class="p-6 bg-gray-50">
         <!-- Breadcrumb -->
-        <a-breadcrumb class="mb-4">
-          <a-breadcrumb-item>
+        <ABreadcrumb class="mb-4">
+          <ABreadcrumbItem>
             <HomeOutlined/>
-          </a-breadcrumb-item>
-          <a-breadcrumb-item>Admin</a-breadcrumb-item>
-          <a-breadcrumb-item>{{ currentPage }}</a-breadcrumb-item>
-        </a-breadcrumb>
+          </ABreadcrumbItem>
+          <ABreadcrumbItem>Admin</ABreadcrumbItem>
+          <ABreadcrumbItem>{{ currentPage }}</ABreadcrumbItem>
+        </ABreadcrumb>
 
         <!-- Page Content -->
         <div class="bg-white p-6 rounded-lg shadow">
           <slot/>
         </div>
-      </a-layout-content>
+      </ALayoutContent>
     </ALayout>
-  </a-layout>
+  </ALayout>
 </template>
 
 <script setup lang="ts">

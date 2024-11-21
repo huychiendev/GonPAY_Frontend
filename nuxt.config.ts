@@ -6,7 +6,8 @@ export default defineNuxtConfig({
   ],
 
   plugins: [
-    '@/plugins/antd'
+    '@/plugins/antd',
+    '@/plugins/fetch'
   ],
 
   css: [
@@ -20,5 +21,13 @@ export default defineNuxtConfig({
   devServer: {
     port: 3399
   },
-  compatibilityDate: '2024-11-19'
+  compatibilityDate: '2024-11-19',
+  runtimeConfig: {
+    public: {
+      apiBase: 'http://localhost:8080'
+    }
+  },
+  imports: {
+    dirs: ['composables/**']
+  }
 })
