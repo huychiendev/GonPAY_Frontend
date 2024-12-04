@@ -242,7 +242,7 @@ const currentPage = computed(() => {
 const handleLogout = async () => {
   try {
     // Add logout logic here
-    await router.push('/login')
+    await router.push('/auth/login')
   } catch (error) {
     console.error('Logout failed:', error)
   }

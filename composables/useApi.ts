@@ -1,9 +1,19 @@
+interface ApiError {
+  status: number
+  message: string
+}
+
+interface ApiResponse<T> {
+  data: Ref<T | null>
+  error: Ref<ApiError | null>
+}
+
 export const useApi = () => {
   const config = useRuntimeConfig()
   
-  const fetchApi = async (endpoint: string, options: any = {}) => {
+  const fetchApi = async <T>(url: string, options?: any): Promise<ApiResponse<T>> => {
     try {
-      const { data, error } = await useFetch(endpoint, {
+      const { data, error } = await useFetch(url, {
         baseURL: config.public.apiBase,
         headers: {
           'Content-Type': 'application/json',

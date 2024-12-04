@@ -6,7 +6,9 @@
         <p class="text-gray-500">Quản lý các phương thức thanh toán trong hệ thống</p>
       </div>
       <AButton type="primary" @click="showAddModal = true">
-        <template #icon><PlusOutlined /></template>
+        <template #icon>
+          <PlusOutlined />
+        </template>
         Thêm phương thức
       </AButton>
     </div>
@@ -14,9 +16,11 @@
     <div class="bg-white p-4 rounded-lg shadow mb-6">
       <div class="flex justify-between gap-4 mb-4">
         <div class="flex gap-4 flex-1">
-          <AInputSearch v-model:value="searchText" placeholder="Tìm kiếm theo số tài khoản, ngân hàng..." class="max-w-xs" @search="handleSearch" />
+          <AInputSearch v-model:value="searchText" placeholder="Tìm kiếm theo số tài khoản, ngân hàng..."
+            class="max-w-xs" @search="handleSearch" />
           <ASelect v-model:value="filters.type" placeholder="Loại phương thức" class="w-40">
-            <ASelectOption v-for="type in paymentTypes" :key="type.value" :value="type.value">{{ type.label }}</ASelectOption>
+            <ASelectOption v-for="type in paymentTypes" :key="type.value" :value="type.value">{{ type.label }}
+            </ASelectOption>
           </ASelect>
           <ASelect v-model:value="filters.status" placeholder="Trạng thái" class="w-40">
             <ASelectOption value="ACTIVE">Hoạt động</ASelectOption>
@@ -25,10 +29,14 @@
         </div>
         <div class="flex gap-2">
           <AButton @click="handleRefresh">
-            <template #icon><ReloadOutlined /></template>
+            <template #icon>
+              <ReloadOutlined />
+            </template>
           </AButton>
           <AButton @click="handleExport">
-            <template #icon><DownloadOutlined /></template>
+            <template #icon>
+              <DownloadOutlined />
+            </template>
             Xuất Excel
           </AButton>
         </div>
@@ -49,13 +57,20 @@
           <template v-if="column.key === 'action'">
             <div class="flex gap-2">
               <AButton type="link" size="small" @click="handleEdit(record)">
-                <template #icon><EditOutlined /></template>
+                <template #icon>
+                  <EditOutlined />
+                </template>
               </AButton>
               <AButton v-if="!record.is_default" type="link" size="small" @click="handleSetDefault(record)">
-                <template #icon><StarOutlined /></template>
+                <template #icon>
+                  <StarOutlined />
+                </template>
               </AButton>
-              <AButton type="link" size="small" @click="handleToggleStatus(record)" :danger="record.status === 'ACTIVE'">
-                <template #icon><PoweroffOutlined /></template>
+              <AButton type="link" size="small" @click="handleToggleStatus(record)"
+                :danger="record.status === 'ACTIVE'">
+                <template #icon>
+                  <PoweroffOutlined />
+                </template>
               </AButton>
             </div>
           </template>
@@ -67,7 +82,8 @@
       <AForm :model="formState" layout="vertical">
         <AFormItem label="Loại phương thức" required>
           <ASelect v-model:value="formState.method_type">
-            <ASelectOption v-for="type in paymentTypes" :key="type.value" :value="type.value">{{ type.label }}</ASelectOption>
+            <ASelectOption v-for="type in paymentTypes" :key="type.value" :value="type.value">{{ type.label }}
+            </ASelectOption>
           </ASelect>
         </AFormItem>
         <AFormItem label="Số tài khoản" required>
@@ -82,12 +98,7 @@
       </AForm>
     </AModal>
 
-    <ExportModal
-      v-model:visible="modal"
-      :data="dataSource" 
-      :columns="columns"
-      @success="handleExportSuccess"
-    />
+    <ExportModal v-model:visible="modal" :data="dataSource" :columns="columns" @success="handleExportSuccess" />
   </div>
 </template>
 
@@ -201,8 +212,8 @@ const columns = [
 const filteredPaymentMethods = computed(() => {
   return paymentMethods.value.filter(method => {
     const matchesSearch = !searchText.value ||
-        method.account_number.toLowerCase().includes(searchText.value.toLowerCase()) ||
-        method.bank_name.toLowerCase().includes(searchText.value.toLowerCase())
+      method.account_number.toLowerCase().includes(searchText.value.toLowerCase()) ||
+      method.bank_name.toLowerCase().includes(searchText.value.toLowerCase())
     const matchesType = !filters.type || method.method_type === filters.type
     const matchesStatus = !filters.status || method.status === filters.status
     return matchesSearch && matchesType && matchesStatus
@@ -241,7 +252,7 @@ const handleSetDefault = (record: PaymentMethod) => {
 const handleToggleStatus = (record: PaymentMethod) => {
   const newStatus = record.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
   paymentMethods.value = paymentMethods.value.map(method =>
-      method.id === record.id ? { ...method, status: newStatus } : method
+    method.id === record.id ? { ...method, status: newStatus } : method
   )
   message.success(`Đã ${newStatus === 'ACTIVE' ? 'kích hoạt' : 'khóa'} phương thức thanh toán`)
 }
@@ -274,15 +285,15 @@ const realtimeStats = reactive({
 const updateRealtimeStats = () => {
   // Tăng số giao dịch
   realtimeStats.totalTransactions += Math.floor(Math.random() * 3)
-  
+
   // Dao động tỷ lệ thành công
   realtimeStats.successRate += (Math.random() - 0.5) * 0.2
   if (realtimeStats.successRate > 99.9) realtimeStats.successRate = 99.9
   if (realtimeStats.successRate < 90) realtimeStats.successRate = 90
-  
+
   // Tăng tổng số tiền (từ 100k đến 10tr mỗi giao dịch)
   realtimeStats.totalAmount += Math.floor(Math.random() * 9900000 + 100000)
-  
+
   realtimeStats.lastUpdate = new Date()
 }
 

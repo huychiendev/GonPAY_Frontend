@@ -2,13 +2,19 @@ export default defineNuxtConfig({
   ssr: false,
 
   modules: [
-    '@nuxtjs/tailwindcss'
-  ],
+    '@nuxtjs/tailwindcss',
+    '@pinia/nuxt', 
+  ], 
 
   plugins: [
     '@/plugins/antd',
     '@/plugins/fetch'
   ],
+
+  imports: {
+    dirs: ['stores', 'composables']
+  },
+
   vite: {
     // Các tùy chọn cấu hình cho Vite
   },
@@ -29,7 +35,7 @@ export default defineNuxtConfig({
       apiBase: 'http://localhost:8080'
     }
   },
-  imports: {
-    dirs: ['composables/**']
+  router: {
+    middleware: ['auth']
   }
 })

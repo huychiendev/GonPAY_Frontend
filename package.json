@@ -10,15 +10,17 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@pinia/nuxt": "^0.5.1",
     "ant-design-vue": "^4.2.5",
     "echarts": "^5.5.1",
     "file-saver": "^2.0.5",
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.4",
     "nuxt": "^3.13.2",
-    "vue": "latest",
+    "pinia": "^2.1.7",
+    "vue": "^3.3.4",
     "vue-echarts": "^7.0.3",
-    "vue-router": "latest",
+    "vue-router": "^4.2.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
