@@ -104,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   ReloadOutlined, DownloadOutlined, EyeOutlined, CopyOutlined,
@@ -159,25 +159,25 @@ const services = [
 const mockLogs = [
   {
     id: 1,
-    timestamp: '2024-11-21T10:00:00Z',
+    timestamp: '2024-03-21T10:00:00Z', 
     level: 'ERROR',
     service: 'PAYMENT',
-    message: 'Failed to process payment transaction',
+    message: 'Lỗi xử lý giao dịch thanh toán',
     details: {
       transaction_id: 'TRX123456',
       error_code: 'INSUFFICIENT_FUNDS',
-      amount: 1000000
+      amount: 1500000
     },
     ip: '192.168.1.1',
     user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-    stack_trace: 'Error: Insufficient funds\n at ProcessPayment.execute (/src/services/payment.ts:125)\n at async Transaction.process (/src/models/transaction.ts:89)'
+    stack_trace: 'Error: Số dư không đủ\n at ProcessPayment.execute (/src/services/payment.ts:125)'
   },
   {
-    id: 2,
-    timestamp: '2024-11-21T09:55:00Z',
+    id: 2, 
+    timestamp: '2024-03-21T09:55:00Z',
     level: 'WARNING',
     service: 'AUTH',
-    message: 'Multiple failed login attempts detected',
+    message: 'Phát hiện nhiều lần đăng nhập thất bại',
     details: {
       user_id: 'USR789',
       attempt_count: 5,
@@ -186,8 +186,283 @@ const mockLogs = [
     ip: '192.168.1.100',
     user_agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
     stack_trace: null
+  },
+  {
+    id: 3,
+    timestamp: '2024-03-21T09:50:00Z',
+    level: 'INFO',
+    service: 'USER',
+    message: 'Người dùng cập nhật thông tin cá nhân',
+    details: {
+      user_id: 'USR456',
+      fields_updated: ['phone_number', 'address']
+    },
+    ip: '192.168.1.50',
+    user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+    stack_trace: null
+  },
+  {
+    id: 4,
+    timestamp: '2024-03-21T09:45:00Z', 
+    level: 'ERROR',
+    service: 'WALLET',
+    message: 'Lỗi kết nối đến ngân hàng liên kết',
+    details: {
+      bank_code: 'VCB',
+      error_code: 'CONNECTION_TIMEOUT'
+    },
+    ip: '192.168.1.25',
+    user_agent: 'System Service',
+    stack_trace: 'Error: Không thể kết nối đến cổng thanh toán\n at BankConnection.connect (/src/services/bank.ts:89)'
+  },
+  {
+    id: 5,
+    timestamp: '2024-03-21T09:40:00Z',
+    level: 'INFO',
+    service: 'NOTIFICATION',
+    message: 'Gửi thông báo OTP thành công',
+    details: {
+      notification_id: 'NTF789',
+      type: 'SMS',
+      recipient: '098*****789'
+    },
+    ip: '192.168.1.30',
+    user_agent: 'Notification Service',
+    stack_trace: null
+  },
+  {
+    id: 6,
+    timestamp: '2024-03-21T09:35:00Z',
+    level: 'WARNING',
+    service: 'PAYMENT',
+    message: 'Giao dịch vượt hạn mức ngày',
+    details: {
+      user_id: 'USR123',
+      transaction_amount: 50000000,
+      daily_limit: 100000000,
+      daily_used: 95000000
+    },
+    ip: '192.168.1.40',
+    user_agent: 'Mozilla/5.0 (Linux; Android 11)',
+    stack_trace: null
+  },
+  {
+    id: 7,
+    timestamp: '2024-03-21T09:30:00Z',
+    level: 'ERROR',
+    service: 'AUTH',
+    message: 'Lỗi xác thực token JWT',
+    details: {
+      token_id: 'JWT789',
+      error: 'TOKEN_EXPIRED'
+    },
+    ip: '192.168.1.60',
+    user_agent: 'PostmanRuntime/7.29.0',
+    stack_trace: 'Error: Token hết hạn\n at JWTVerifier.verify (/src/auth/jwt.ts:45)'
+  },
+  {
+    id: 8,
+    timestamp: '2024-03-21T09:25:00Z',
+    level: 'INFO',
+    service: 'USER',
+    message: 'Đăng ký người dùng mới thành công',
+    details: {
+      user_id: 'USR890',
+      registration_source: 'MOBILE_APP'
+    },
+    ip: '192.168.1.70',
+    user_agent: 'GonPay Mobile App/1.0.0',
+    stack_trace: null
+  },
+  {
+    id: 9,
+    timestamp: '2024-03-21T09:20:00Z',
+    level: 'DEBUG',
+    service: 'WALLET',
+    message: 'Kiểm tra số dư ví định kỳ',
+    details: {
+      wallet_id: 'WAL456',
+      balance: 15000000,
+      last_transaction: 'TRX789'
+    },
+    ip: '192.168.1.80',
+    user_agent: 'System Scheduler',
+    stack_trace: null
   }
 ]
+
+const additionalLogs = [
+  {
+    id: 10,
+    timestamp: '2024-03-21T09:15:00Z',
+    level: 'ERROR',
+    service: 'PAYMENT',
+    message: 'Giao dịch thanh toán thất bại - Thẻ hết hạn',
+    details: {
+      transaction_id: 'PAY456789',
+      card_info: {
+        bank: 'BIDV',
+        last_digits: '6789',
+        error: 'EXPIRED_CARD'
+      },
+      amount: 2500000
+    },
+    ip: '192.168.1.90',
+    user_agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)',
+    stack_trace: 'Error: Thẻ đã hết hạn\n at PaymentProcessor.validateCard (/src/services/payment.ts:156)'
+  },
+  {
+    id: 11,
+    timestamp: '2024-03-21T09:10:00Z',
+    level: 'WARNING',
+    service: 'USER',
+    message: 'Phát hiện đăng nhập từ thiết bị mới',
+    details: {
+      user_id: 'USR567',
+      device_info: {
+        location: 'Hà Nội, Việt Nam',
+        device: 'iPhone 13',
+        browser: 'Safari'
+      }
+    },
+    ip: '192.168.1.95',
+    user_agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15',
+    stack_trace: null
+  },
+  {
+    id: 12,
+    timestamp: '2024-03-21T09:05:00Z',
+    level: 'INFO',
+    service: 'WALLET',
+    message: 'Liên kết ví với ngân hàng thành công',
+    details: {
+      wallet_id: 'WAL789',
+      bank_info: {
+        bank_code: 'TCB',
+        account_number: '19034xxx789',
+        holder_name: 'NGUYEN VAN TUAN'
+      }
+    },
+    ip: '192.168.1.100',
+    user_agent: 'Mozilla/5.0 (Linux; Android 12)',
+    stack_trace: null
+  },
+  {
+    id: 13,
+    timestamp: '2024-03-21T09:00:00Z',
+    level: 'ERROR',
+    service: 'NOTIFICATION',
+    message: 'Lỗi gửi SMS OTP',
+    details: {
+      phone: '098xxx6789',
+      provider: 'Viettel',
+      error_code: 'PROVIDER_ERROR',
+      retry_count: 2
+    },
+    ip: '192.168.1.110',
+    user_agent: 'Notification Service',
+    stack_trace: 'Error: Không thể kết nối đến nhà mạng\n at SMSProvider.send (/src/services/sms.ts:78)'
+  },
+  {
+    id: 14,
+    timestamp: '2024-03-21T08:55:00Z',
+    level: 'INFO',
+    service: 'AUTH',
+    message: 'Thay đổi mật khẩu thành công',
+    details: {
+      user_id: 'USR234',
+      change_method: 'SELF_SERVICE',
+      password_strength: 'STRONG'
+    },
+    ip: '192.168.1.120',
+    user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0',
+    stack_trace: null
+  },
+  {
+    id: 15,
+    timestamp: '2024-03-21T08:50:00Z',
+    level: 'WARNING',
+    service: 'PAYMENT',
+    message: 'Giao dịch đáng ngờ - Số tiền lớn',
+    details: {
+      transaction_id: 'TRX987654',
+      amount: 150000000,
+      risk_score: 0.85,
+      flags: ['LARGE_AMOUNT', 'NEW_RECIPIENT']
+    },
+    ip: '192.168.1.130',
+    user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+    stack_trace: null
+  },
+  {
+    id: 16,
+    timestamp: '2024-03-21T08:45:00Z',
+    level: 'DEBUG',
+    service: 'WALLET',
+    message: 'Đồng bộ số dư ví định kỳ',
+    details: {
+      wallet_count: 1250,
+      sync_duration: '45s',
+      updated_wallets: 28
+    },
+    ip: '192.168.1.140',
+    user_agent: 'System Scheduler',
+    stack_trace: null
+  },
+  {
+    id: 17,
+    timestamp: '2024-03-21T08:40:00Z',
+    level: 'ERROR',
+    service: 'USER',
+    message: 'Lỗi xác thực CMND/CCCD',
+    details: {
+      user_id: 'USR789',
+      id_number: '0791xxx789',
+      error_type: 'IMAGE_QUALITY',
+      verification_provider: 'VNPT eKYC'
+    },
+    ip: '192.168.1.150',
+    user_agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)',
+    stack_trace: 'Error: Ảnh CMND không đạt chất lượng\n at eKYC.verifyID (/src/services/kyc.ts:245)'
+  },
+  {
+    id: 18,
+    timestamp: '2024-03-21T08:35:00Z',
+    level: 'INFO',
+    service: 'NOTIFICATION',
+    message: 'Gửi thông báo marketing thành công',
+    details: {
+      campaign_id: 'CPG123',
+      recipients: 1500,
+      delivered: 1486,
+      failed: 14,
+      template: 'TET_2024_PROMO'
+    },
+    ip: '192.168.1.160',
+    user_agent: 'Marketing Service',
+    stack_trace: null
+  },
+  {
+    id: 19,
+    timestamp: '2024-03-21T08:30:00Z',
+    level: 'WARNING',
+    service: 'AUTH',
+    message: 'Phát hiện tấn công Brute Force',
+    details: {
+      target_user: 'USR456',
+      ip_addresses: ['192.168.1.201', '192.168.1.202', '192.168.1.203'],
+      attempt_count: 15,
+      time_window: '5 minutes',
+      action_taken: 'IP_BLOCKED'
+    },
+    ip: '192.168.1.170',
+    user_agent: 'Security Service',
+    stack_trace: null
+  }
+]
+
+// Thêm vào mảng mockLogs hiện có
+mockLogs.push(...additionalLogs)
 
 const loading = ref(false)
 const detailsVisible = ref(false)
@@ -290,8 +565,83 @@ const filteredLogs = computed(() => {
   })
 })
 
+// Thêm hàm cập nhật realtime
+const updateRealtimeStats = () => {
+  const hour = new Date().getHours()
+  let activityMultiplier = 1
+
+  // Điều chỉnh hệ số hoạt động theo giờ
+  if (hour >= 9 && hour <= 11) activityMultiplier = 1.5 // Cao điểm sáng
+  else if (hour >= 13 && hour <= 16) activityMultiplier = 1.3 // Cao điểm chiều  
+  else if (hour >= 22 || hour <= 5) activityMultiplier = 0.3 // Đêm khuya
+
+  // Cập nhật số liệu thống kê
+  stats.forEach(stat => {
+    switch(stat.title) {
+      case 'Tổng số logs':
+        stat.value += Math.floor(Math.random() * 3) * activityMultiplier
+        stat.trend = +(Math.random() * 2 + 7).toFixed(1)
+        break
+      case 'Lỗi hệ thống':
+        if (Math.random() > 0.7) {
+          stat.value += 1
+          stat.trend = +(Math.random() * 5 - 15).toFixed(1)
+        }
+        break  
+      case 'API Calls/phút':
+        stat.value += Math.floor(Math.random() * 50 * activityMultiplier)
+        stat.trend = +(Math.random() * 4 + 10).toFixed(1)
+        break
+      case 'Thời gian phản hồi':
+        stat.value = Math.floor(200 + Math.random() * 100 * activityMultiplier)
+        stat.trend = +(Math.random() * 10 - 5).toFixed(1)
+        break
+    }
+  })
+
+  // Thêm log mới ngẫu nhiên
+  if (Math.random() > 0.7) {
+    const services = ['AUTH', 'PAYMENT', 'USER', 'WALLET', 'NOTIFICATION']
+    const levels = ['ERROR', 'WARNING', 'INFO', 'DEBUG']
+    const messages = [
+      'Đăng nhập thành công',
+      'Cập nhật thông tin người dùng',
+      'Gửi OTP xác thực',
+      'Kiểm tra số dư ví',
+      'Giao dịch chuyển tiền',
+      'Liên kết ngân hàng',
+      'Xác thực token',
+      'Tạo ví mới'
+    ]
+    
+    const newLog = {
+      id: logs.value.length + 1,
+      timestamp: new Date().toISOString(),
+      level: levels[Math.floor(Math.random() * levels.length)],
+      service: services[Math.floor(Math.random() * services.length)],
+      message: messages[Math.floor(Math.random() * messages.length)],
+      details: {
+        user_id: `USR${Math.random().toString(36).substr(2, 6)}`,
+        ip: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`
+      },
+      ip: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+      user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+      stack_trace: null
+    }
+    
+    logs.value.unshift(newLog)
+    if (logs.value.length > 100) logs.value.pop()
+  }
+}
+
+// Thêm vào onMounted
 onMounted(() => {
   handleRefresh()
+  const statsInterval = setInterval(updateRealtimeStats, 1000)
+  
+  onUnmounted(() => {
+    clearInterval(statsInterval)
+  })
 })
 
 definePageMeta({

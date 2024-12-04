@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "nuxt dev --vite",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -12,14 +12,19 @@
   "dependencies": {
     "ant-design-vue": "^4.2.5",
     "echarts": "^5.5.1",
+    "file-saver": "^2.0.5",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "nuxt": "^3.13.2",
     "vue": "latest",
     "vue-echarts": "^7.0.3",
-    "vue-router": "latest"
+    "vue-router": "latest",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@ant-design/icons-vue": "^7.0.1",
     "@nuxtjs/tailwindcss": "^6.12.2",
+    "@types/file-saver": "^2.0.7",
     "@types/lodash": "^4.17.13",
     "@types/node": "^22.7.9",
     "autoprefixer": "^10.4.20",
@@ -27,6 +32,7 @@
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
     "typescript": "^5.6.3",
-    "unplugin-vue-components": "^0.27.4"
+    "unplugin-vue-components": "^0.27.4",
+    "vite": "^5.4.11"
   }
 }

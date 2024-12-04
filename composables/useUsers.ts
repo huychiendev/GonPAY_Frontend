@@ -1,6 +1,7 @@
 import { ref, reactive } from 'vue'
 import { userService } from '~/services/userService'
 import type { User, UserFilters, UserState } from '~/pages/admin/users/types'
+import {message} from "ant-design-vue";
 
 export const useUsers = () => {
   const userState = reactive<UserState>({
@@ -55,4 +56,4 @@ export const useUsers = () => {
     fetchUsers,
     updateUserStatus
   }
-} 
+}

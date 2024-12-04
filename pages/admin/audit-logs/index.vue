@@ -504,6 +504,157 @@ onMounted(() => {
     window.removeEventListener('keydown', handleKeyPress)
   })
 })
+
+// Thêm vào phần state
+const realtimeStats = reactive({
+  totalActivities: 8547,
+  loginCount: 245, 
+  transactions: 1234,
+  errors: 23,
+  lastUpdate: new Date()
+})
+
+// Hàm cập nhật số liệu realtime
+const updateRealtimeStats = () => {
+  const hour = new Date().getHours()
+  let activityMultiplier = 1
+
+  // Điều chỉnh hệ số hoạt động theo giờ
+  if (hour >= 9 && hour <= 11) activityMultiplier = 1.5 // Cao điểm sáng
+  else if (hour >= 13 && hour <= 16) activityMultiplier = 1.3 // Cao điểm chiều  
+  else if (hour >= 22 || hour <= 5) activityMultiplier = 0.3 // Đêm khuya
+
+  // Cập nhật tổng hoạt động
+  if (Math.random() > 0.5) {
+    realtimeStats.totalActivities = Math.floor(realtimeStats.totalActivities + Math.floor(Math.random() * 3) * activityMultiplier)
+  }
+
+  // Cập nhật đăng nhập/đăng ký
+  if (Math.random() > 0.7) {
+    realtimeStats.loginCount = Math.floor(realtimeStats.loginCount + Math.floor(Math.random() * 2) * activityMultiplier)
+  }
+
+  // Cập nhật giao dịch
+  if (Math.random() > 0.6) {
+    realtimeStats.transactions = Math.floor(realtimeStats.transactions + Math.floor(Math.random() * 2) * activityMultiplier)
+  }
+
+  // Cập nhật lỗi (tỷ lệ thấp hơn)
+  if (Math.random() > 0.9) {
+    realtimeStats.errors = Math.floor(realtimeStats.errors + Math.floor(Math.random() * 2) * activityMultiplier)
+  }
+
+  // Cập nhật stats
+  stats[0].value = Math.floor(realtimeStats.totalActivities)
+  stats[1].value = Math.floor(realtimeStats.loginCount)
+  stats[2].value = Math.floor(realtimeStats.transactions)
+  stats[3].value = Math.floor(realtimeStats.errors)
+
+  // Cập nhật % tăng trưởng
+  stats[0].trend = +((Math.random() * 5 + 10).toFixed(1))
+  stats[1].trend = +((Math.random() * 3 + 7).toFixed(1))
+  stats[2].trend = +((Math.random() * 8 - 4).toFixed(1)) 
+  stats[3].trend = +((Math.random() * 10 - 20).toFixed(1))
+
+  realtimeStats.lastUpdate = new Date()
+}
+
+// Thêm vào phần mock data nhiều bản ghi hơn
+const generateMockLogs = (count = 50) => {
+  const logs = []
+  const users = [
+    'Nguyễn Văn A', 'Trần Thị B', 'Lê Văn C', 'Phạm Thị D',
+    'Hoàng Văn E', 'Đặng Thị F', 'Bùi Văn G', 'Vũ Thị H'
+  ]
+  
+  for (let i = 0; i < count; i++) {
+    const user = users[Math.floor(Math.random() * users.length)]
+    const action = actionTypes[Math.floor(Math.random() * actionTypes.length)].value
+    const module = modules[Math.floor(Math.random() * modules.length)].value
+    const status = Math.random() > 0.1 ? 'SUCCESS' : 'FAILED'
+
+    logs.push({
+      id: i + 1,
+      timestamp: new Date(Date.now() - Math.floor(Math.random() * 86400000)).toISOString(),
+      user_name: user,
+      user_email: user.toLowerCase().replace(' ', '') + '@example.com',
+      action,
+      module,
+      status,
+      ip_address: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+      user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+      old_data: generateRandomData(),
+      new_data: generateRandomData(),
+      metadata: generateRandomMetadata(action)
+    })
+  }
+  return logs
+}
+
+const generateRandomData = () => {
+  const types = ['balance', 'status', 'settings', 'profile']
+  const type = types[Math.floor(Math.random() * types.length)]
+  
+  switch(type) {
+    case 'balance':
+      return { balance: Math.floor(Math.random() * 10000000) }
+    case 'status':
+      return { status: Math.random() > 0.5 ? 'ACTIVE' : 'BLOCKED' }
+    case 'settings':
+      return { notification: Math.random() > 0.5, twoFactor: Math.random() > 0.5 }
+    case 'profile':
+      return { phone: '0' + Math.floor(Math.random() * 1000000000) }
+    default:
+      return {}
+  }
+}
+
+const generateRandomMetadata = (action) => {
+  switch(action) {
+    case 'TRANSFER':
+      return {
+        transaction_id: 'TRX' + Math.random().toString(36).substr(2, 6),
+        amount: Math.floor(Math.random() * 10000000),
+        recipient: 'User' + Math.floor(Math.random() * 100)
+      }
+    case 'LOGIN':
+      return {
+        device: Math.random() > 0.5 ? 'Mobile' : 'Desktop',
+        location: 'Vietnam',
+        browser: 'Chrome'
+      }
+    default:
+      return {
+        timestamp: new Date().toISOString(),
+        source: 'System'
+      }
+  }
+}
+
+// Thêm vào onMounted
+onMounted(() => {
+  // Khởi tạo logs
+  logs.value = generateMockLogs(50)
+  
+  // Cập nhật số liệu mỗi giây
+  const statsInterval = setInterval(updateRealtimeStats, 1000)
+  
+  // Thêm log mới mỗi 5 giây
+  const logsInterval = setInterval(() => {
+    const newLog = generateMockLogs(1)[0]
+    logs.value.unshift(newLog)
+    // Giới hạn số lượng logs hiển thị
+    if (logs.value.length > 100) {
+      logs.value = logs.value.slice(0, 100)
+    }
+  }, 5000)
+
+  onUnmounted(() => {
+    clearInterval(statsInterval)
+    clearInterval(logsInterval)
+  })
+})
+
 definePageMeta({
   layout: 'admin'
 })

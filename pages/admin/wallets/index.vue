@@ -188,7 +188,7 @@
               :options="userOptions"
           />
         </AFormItem>
-        
+
         <AFormItem label="Loại ví" required>
           <ASelect v-model:value="walletForm.type">
             <ASelectOption value="PERSONAL">Cá nhân</ASelectOption>
@@ -201,7 +201,7 @@
           <div class="space-y-2">
             <div class="flex items-center gap-4">
               <span class="w-24">Hàng ngày:</span>
-              <AInputNumber 
+              <AInputNumber
                   v-model:value="walletForm.limits.daily"
                   :formatter="value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
                   :parser="value => value.replace(/\$\s?|(,*)/g, '')"
@@ -212,7 +212,7 @@
             <div class="flex items-center gap-4">
               <span class="w-24">Hàng tháng:</span>
               <AInputNumber
-                  v-model:value="walletForm.limits.monthly" 
+                  v-model:value="walletForm.limits.monthly"
                   :formatter="value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
                   :parser="value => value.replace(/\$\s?|(,*)/g, '')"
                   class="w-full"
@@ -231,7 +231,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, BarChart } from 'echarts/charts'
@@ -254,6 +254,7 @@ import {
   HistoryOutlined,
   DownloadOutlined
 } from '@ant-design/icons-vue'
+import {message} from "ant-design-vue";
 
 // Register ECharts components
 use([
@@ -316,7 +317,7 @@ const wallets = ref([
     balance: 5000000,
     status: 'ACTIVE',
     created_at: '2024-03-18T10:00:00Z',
-    owner: 'Nguyễn Văn A',
+    owner: 'Nguyễn Văn An',
     type: 'PERSONAL',
     transaction_count: 15,
     last_transaction: '2024-03-18T15:00:00Z',
@@ -327,19 +328,19 @@ const wallets = ref([
     }
   },
   {
-    key: '2', 
+    key: '2',
     wallet_number: 'W987654321',
-    balance: 10000000,
-    status: 'ACTIVE', 
+    balance: 150000000,
+    status: 'ACTIVE',
     created_at: '2024-03-17T09:00:00Z',
-    owner: 'Công ty TNHH ABC',
+    owner: 'Công ty TNHH Thương mại Hoàng Gia',
     type: 'BUSINESS',
-    transaction_count: 25,
+    transaction_count: 45,
     last_transaction: '2024-03-18T14:30:00Z',
     currency: 'VND',
     limits: {
-      daily: 500000000,
-      monthly: 5000000000
+      daily: 1000000000,
+      monthly: 10000000000
     }
   },
   {
@@ -347,7 +348,7 @@ const wallets = ref([
     wallet_number: 'W456789123',
     balance: 2000000,
     status: 'INACTIVE',
-    created_at: '2024-03-16T11:00:00Z', 
+    created_at: '2024-03-16T11:00:00Z',
     owner: 'Trần Thị B',
     type: 'PERSONAL',
     transaction_count: 8,
@@ -425,19 +426,36 @@ const userOptions = [
 // Chart options
 const chartOption = reactive({
   tooltip: {
-    trigger: 'axis'
+    trigger: 'axis',
+    formatter: (params) => {
+      return `${params[0].axisValue}<br/>Số dư: ${formatCurrency(params[0].value)}`
+    }
   },
   xAxis: {
     type: 'category',
     data: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
   },
   yAxis: {
-    type: 'value'
+    type: 'value',
+    axisLabel: {
+      formatter: (value) => `${(value/1000000000).toFixed(1)}B`
+    }
   },
   series: [{
-    data: [150, 230, 224, 218, 135, 147, 260],
+    data: [
+      15000000000,
+      17500000000,
+      16800000000,
+      18200000000,
+      19500000000,
+      18800000000,
+      20100000000
+    ],
     type: 'line',
-    smooth: true
+    smooth: true,
+    areaStyle: {
+      opacity: 0.3
+    }
   }]
 })
 
@@ -507,25 +525,25 @@ const handleTransfer = async (wallet) => {
 const handleViewHistory = async (wallet) => {
   showHistoryDrawer.value = true
   selectedWallet.value = wallet
-  
+
   // Mock data lịch sử giao dịch
   transactionHistory.value = [
     {
       id: 'TRX001',
       type: 'TRANSFER',
       amount: 1000000,
-      status: 'SUCCESS', 
+      status: 'SUCCESS',
       created_at: '2024-03-18T15:00:00Z',
       description: 'Chuyển tiền cho Nguyễn Văn B',
       from_wallet: wallet.wallet_number,
       to_wallet: 'W987654321'
     },
     {
-      id: 'TRX002', 
+      id: 'TRX002',
       type: 'RECEIVE',
       amount: 2000000,
       status: 'SUCCESS',
-      created_at: '2024-03-17T10:30:00Z', 
+      created_at: '2024-03-17T10:30:00Z',
       description: 'Nhận tiền từ Trần Thị C',
       from_wallet: 'W456789123',
       to_wallet: wallet.wallet_number
@@ -549,14 +567,14 @@ const handleExport = async (wallet) => {
     // Mock xuất file Excel/PDF
     await new Promise(resolve => setTimeout(resolve, 1500))
     message.success('Đã xuất báo cáo thành công')
-    
+
     // Tạo mock data để tải về
     const data = {
       wallet_info: wallet,
       transactions: transactionHistory.value,
       generated_at: new Date().toISOString()
     }
-    
+
     // Tải file xuống
     const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'})
     const url = window.URL.createObjectURL(blob)
@@ -565,7 +583,7 @@ const handleExport = async (wallet) => {
     link.download = `wallet-report-${wallet.wallet_number}.json`
     link.click()
     window.URL.revokeObjectURL(url)
-    
+
   } catch (error) {
     message.error('Không thể xuất báo cáo')
     console.error(error)
@@ -602,9 +620,94 @@ const handleCreateWalletSubmit = async () => {
   }
 }
 
-// Lifecycle
+// Thêm vào phần script
+const updateStatsRealtime = () => {
+  const hour = new Date().getHours()
+  let activityMultiplier = 1
+
+  // Điều chỉnh hệ số hoạt động theo giờ
+  if (hour >= 9 && hour <= 11) activityMultiplier = 1.5 // Cao điểm sáng
+  else if (hour >= 13 && hour <= 16) activityMultiplier = 1.3 // Cao điểm chiều
+  else if (hour >= 22 || hour <= 5) activityMultiplier = 0.3 // Đêm khuya
+
+  // Cập nhật số liệu thống kê
+  stats.forEach(stat => {
+    switch(stat.title) {
+      case 'Tổng số ví':
+        if (Math.random() > 0.7) { // 30% cơ hội tăng
+          stat.value += Math.floor(Math.random() * 3) * activityMultiplier
+          stat.trend = +(Math.random() * 2 + 10).toFixed(1)
+        }
+        break
+      case 'Tổng số dư':
+        stat.value += Math.floor(Math.random() * 10000000 * activityMultiplier)
+        stat.trend = +(Math.random() * 3 + 7).toFixed(1)
+        break
+      case 'Ví hoạt động':
+        stat.value = +(Math.random() * 5 + 85).toFixed(1) // Dao động 85-90%
+        stat.trend = +(Math.random() * 4 - 2).toFixed(1)
+        break
+      case 'Giao dịch hôm nay':
+        stat.value += Math.floor(Math.random() * 5 * activityMultiplier)
+        stat.trend = +(Math.random() * 10 + 5).toFixed(1)
+        break
+    }
+  })
+}
+
+const generateRandomWallet = (index) => {
+  const types = ['PERSONAL', 'BUSINESS', 'SAVING']
+  const owners = [
+    'Trần Thị Bích', 'Lê Hoàng Cường', 'Phạm Minh Đức',
+    'Công ty CP Đầu tư Phát triển ABC', 'Nguyễn Thị Lan',
+    'Vũ Đình Hoàng', 'Đặng Thu Hà', 'Công ty TNHH XYZ',
+    'Bùi Quang Khải', 'Hoàng Thị Mai'
+  ]
+
+  const balances = [
+    5000000, 15000000, 25000000, 50000000, 100000000,
+    200000000, 500000000, 1000000000, 2000000000
+  ]
+
+  const type = types[Math.floor(Math.random() * types.length)]
+  const balance = balances[Math.floor(Math.random() * balances.length)]
+
+  return {
+    key: `${index + 1}`,
+    wallet_number: `W${Math.random().toString().slice(2, 11)}`,
+    balance: balance,
+    status: Math.random() > 0.1 ? 'ACTIVE' : 'INACTIVE',
+    created_at: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
+    owner: owners[Math.floor(Math.random() * owners.length)],
+    type: type,
+    transaction_count: Math.floor(Math.random() * 100),
+    last_transaction: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+    currency: 'VND',
+    limits: {
+      daily: type === 'BUSINESS' ? 1000000000 : 100000000,
+      monthly: type === 'BUSINESS' ? 10000000000 : 1000000000
+    }
+  }
+}
+
+// Khởi tạo 30 ví ngẫu nhiên
+const initializeWallets = () => {
+  const initialWallets = []
+  for (let i = 0; i < 30; i++) {
+    initialWallets.push(generateRandomWallet(i))
+  }
+  wallets.value = initialWallets
+}
+
+// Thêm vào onMounted
 onMounted(() => {
+  initializeWallets()
   handleRefresh()
+  const statsInterval = setInterval(updateStatsRealtime, 1000)
+
+  onUnmounted(() => {
+    clearInterval(statsInterval)
+  })
 })
 definePageMeta({
   layout: 'admin'

@@ -347,7 +347,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref, reactive, computed} from 'vue'
+import {ref, reactive, computed, onMounted, onUnmounted} from 'vue'
 import {message, Modal} from 'ant-design-vue'
 import {
   PlusOutlined,
@@ -413,8 +413,8 @@ const mockNotifications = [
   {
     id: 1,
     type: 'SYSTEM',
-    title: 'Bảo trì hệ thống',
-    content: 'Hệ thống sẽ bảo trì từ 23:00 ngày 20/11/2024 đến 02:00 ngày 21/11/2024',
+    title: 'Bảo trì hệ thống định kỳ',
+    content: 'Hệ thống sẽ bảo trì từ 23:00 ngày 20/11/2024 đến 02:00 ngày 21/11/2024 để nâng cấp tính năng mới',
     status: 'SCHEDULED',
     priority: 'HIGH',
     scheduled_at: '2024-11-20T23:00:00Z',
@@ -431,24 +431,100 @@ const mockNotifications = [
     ]
   },
   {
-    id: 2,
+    id: 2, 
     type: 'SECURITY',
-    title: 'Đăng nhập mới trên thiết bị lạ',
-    content: 'Phát hiện đăng nhập từ thiết bị mới tại Hà Nội',
+    title: 'Cảnh báo đăng nhập lạ',
+    content: 'Phát hiện đăng nhập từ thiết bị mới tại Hà Nội. Vui lòng kiểm tra và xác nhận.',
     status: 'SENT',
     priority: 'HIGH',
     scheduled_at: '2024-11-19T08:00:00Z',
     total_recipients: 1,
     sent_count: 1,
-    created_at: '2024-11-19T08:00:00Z',
-    delivery_logs: [
-      {
-        id: 2,
-        status: 'SENT',
-        message: 'Gửi thành công',
-        timestamp: '2024-11-19T08:00:01Z'
-      }
-    ]
+    created_at: '2024-11-19T08:00:00Z'
+  },
+  {
+    id: 3,
+    type: 'TRANSACTION',
+    title: 'Xác nhận giao dịch thành công',
+    content: 'Giao dịch chuyển tiền 5.000.000đ đến số tài khoản 19037xxx293 - NGUYEN VAN A đã được thực hiện thành công',
+    status: 'SENT',
+    priority: 'MEDIUM',
+    scheduled_at: '2024-11-19T07:30:00Z',
+    total_recipients: 1,
+    sent_count: 1,
+    created_at: '2024-11-19T07:30:00Z'
+  },
+  {
+    id: 4,
+    type: 'MARKETING',
+    title: 'Ưu đãi tháng 11 - Hoàn tiền 5%',
+    content: 'Cơ hội nhận hoàn tiền 5% cho mọi giao dịch thanh toán hóa đơn từ 500.000đ',
+    status: 'SCHEDULED',
+    priority: 'LOW',
+    scheduled_at: '2024-11-21T08:00:00Z',
+    total_recipients: 3000,
+    sent_count: 0,
+    created_at: '2024-11-19T06:00:00Z'
+  },
+  {
+    id: 5,
+    type: 'SYSTEM',
+    title: 'Nâng cấp tính năng mới',
+    content: 'GonPay vừa ra mắt tính năng Ví điện tử liên kết. Khám phá ngay!',
+    status: 'SENT',
+    priority: 'MEDIUM',
+    scheduled_at: '2024-11-18T09:00:00Z',
+    total_recipients: 4500,
+    sent_count: 4482,
+    created_at: '2024-11-18T09:00:00Z'
+  },
+  {
+    id: 6,
+    type: 'TRANSACTION',
+    title: 'Nhắc nhở thanh toán hóa đơn',
+    content: 'Bạn có hóa đơn điện tháng 11 trị giá 857.000đ sắp đến hạn thanh toán',
+    status: 'SCHEDULED',
+    priority: 'LOW',
+    scheduled_at: '2024-11-22T10:00:00Z',
+    total_recipients: 2500,
+    sent_count: 0,
+    created_at: '2024-11-19T05:00:00Z'
+  },
+  {
+    id: 7,
+    type: 'SECURITY',
+    title: 'Xác thực bảo mật 2 lớp',
+    content: 'Vui lòng bật xác thực 2 lớp để bảo vệ tài khoản của bạn tốt hơn',
+    status: 'FAILED',
+    priority: 'HIGH',
+    scheduled_at: '2024-11-19T04:00:00Z',
+    total_recipients: 1200,
+    sent_count: 980,
+    created_at: '2024-11-19T04:00:00Z'
+  },
+  {
+    id: 8,
+    type: 'MARKETING',
+    title: 'Giới thiệu bạn bè - Nhận quà hấp dẫn',
+    content: 'Nhận ngay 50.000đ cho mỗi lượt giới thiệu bạn bè sử dụng GonPay thành công',
+    status: 'SENT',
+    priority: 'LOW',
+    scheduled_at: '2024-11-19T03:00:00Z',
+    total_recipients: 3500,
+    sent_count: 3500,
+    created_at: '2024-11-19T03:00:00Z'
+  },
+  {
+    id: 9,
+    type: 'SYSTEM',
+    title: 'Thông báo nghỉ Tết Nguyên đán 2025',
+    content: 'GonPay thông báo lịch nghỉ Tết Nguyên đán từ ngày 29/01/2025 đến 05/02/2025',
+    status: 'SCHEDULED',
+    priority: 'MEDIUM',
+    scheduled_at: '2024-12-25T08:00:00Z',
+    total_recipients: 5000,
+    sent_count: 0,
+    created_at: '2024-11-19T02:00:00Z'
   }
 ]
 
@@ -814,9 +890,53 @@ const filteredNotifications = computed(() => {
   })
 })
 
-// Lifecycle hooks
+// Thêm hàm cập nhật số liệu realtime
+const updateStatsRealtime = () => {
+  const hour = new Date().getHours()
+  let activityMultiplier = 1
+
+  // Điều chỉnh hệ số hoạt động theo giờ
+  if (hour >= 9 && hour <= 11) activityMultiplier = 1.5 // Cao điểm sáng
+  else if (hour >= 13 && hour <= 16) activityMultiplier = 1.3 // Cao điểm chiều  
+  else if (hour >= 22 || hour <= 5) activityMultiplier = 0.3 // Đêm khuya
+
+  stats.forEach(stat => {
+    switch(stat.title) {
+      case 'Tổng thông báo':
+        if (Math.random() > 0.7) { // 30% cơ hội tăng
+          stat.value += Math.floor(Math.random() * 3) * activityMultiplier
+          stat.trend = +(Math.random() * 2 + 14).toFixed(1)
+        }
+        break
+      case 'Tỷ lệ gửi thành công':
+        stat.value = +(Math.random() * 2 + 97).toFixed(1) // Dao động 97-99%
+        stat.trend = +(Math.random() * 3 + 1).toFixed(1)
+        break
+      case 'Đang chờ gửi':
+        if (Math.random() > 0.5) { // 50% cơ hội thay đổi
+          const change = Math.floor(Math.random() * 5) * activityMultiplier
+          stat.value += Math.random() > 0.6 ? change : -change
+          if (stat.value < 0) stat.value = 0
+          stat.trend = +(Math.random() * 8 - 4).toFixed(1)
+        }
+        break
+      case 'Thất bại':
+        if (Math.random() > 0.8) { // 20% cơ hội tăng
+          stat.value += Math.floor(Math.random() * 2)
+          stat.trend = +(Math.random() * 15 - 10).toFixed(1)
+        }
+        break
+    }
+  })
+}
+
+// Thêm vào onMounted
 onMounted(() => {
-  handleRefresh()
+  const statsInterval = setInterval(updateStatsRealtime, 1000)
+  
+  onUnmounted(() => {
+    clearInterval(statsInterval)
+  })
 })
 
 definePageMeta({

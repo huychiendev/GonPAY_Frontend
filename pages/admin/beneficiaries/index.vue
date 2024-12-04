@@ -94,9 +94,10 @@
         <template v-if="column.key === 'bank_info'">
           <div class="flex items-center">
             <img
-                :src="`/api/placeholder/24/24`"
+                :src="getBankLogo(record)"
                 :alt="record.bank_name"
                 class="mr-2 w-6 h-6 rounded"
+                @error="handleImageError"
             />
             {{ record.bank_name }}
           </div>
@@ -243,7 +244,7 @@
         </div>
 
         <!-- Transaction List -->
-        <AList :dataSource="transactionHistory" class="mt-4">
+        <AList :dataSource="filteredTransactions" class="mt-4">
           <template #renderItem="{ item }">
             <AListItem>
               <div class="flex justify-between items-center w-full">
@@ -317,7 +318,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { message } from 'ant-design-vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -394,29 +395,380 @@ const stats = [
 const mockBeneficiaries = [
   {
     id: 1,
-    beneficiary_name: 'Nguyễn Văn A',
-    account_type: 'BANK_ACCOUNT',
+    beneficiary_name: 'Nguyễn Văn An',
+    account_type: 'BANK_ACCOUNT', 
     bank_code: 'VCB',
     bank_name: 'Vietcombank',
     account_identifier: '1234567890',
     status: 'ACTIVE',
     transaction_count: 25,
     total_amount: 50000000,
-    last_transaction: '2024-11-20T10:00:00Z',
-    created_at: '2024-11-01T00:00:00Z'
+    last_transaction: '2024-03-21T10:00:00Z',
+    created_at: '2024-03-01T00:00:00Z'
   },
   {
-    id: 2,
-    beneficiary_name: 'Trần Thị B',
+    id: 2, 
+    beneficiary_name: 'Trần Thị Bình',
     account_type: 'WALLET',
     bank_code: 'MOMO',
     bank_name: 'Ví MoMo',
     account_identifier: '0912345678',
-    status: 'ACTIVE',
+    status: 'ACTIVE', 
     transaction_count: 15,
     total_amount: 25000000,
-    last_transaction: '2024-11-19T15:30:00Z',
-    created_at: '2024-11-02T00:00:00Z'
+    last_transaction: '2024-03-20T15:30:00Z',
+    created_at: '2024-03-02T00:00:00Z'
+  },
+  {
+    id: 3,
+    beneficiary_name: 'Lê Hoàng Cường',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'TCB', 
+    bank_name: 'Techcombank',
+    account_identifier: '9876543210',
+    status: 'ACTIVE',
+    transaction_count: 42,
+    total_amount: 120000000,
+    last_transaction: '2024-03-21T09:15:00Z',
+    created_at: '2024-03-05T00:00:00Z'
+  },
+  {
+    id: 4,
+    beneficiary_name: 'Phạm Thị Diễm',
+    account_type: 'CARD',
+    bank_code: 'VPB',
+    bank_name: 'VPBank',
+    account_identifier: '4111111111111111',
+    status: 'INACTIVE',
+    transaction_count: 8,
+    total_amount: 15000000,
+    last_transaction: '2024-03-19T14:20:00Z',
+    created_at: '2024-03-10T00:00:00Z'
+  },
+  {
+    id: 5,
+    beneficiary_name: 'Hoàng Văn Em',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'BIDV',
+    bank_name: 'BIDV',
+    account_identifier: '0987654321',
+    status: 'ACTIVE',
+    transaction_count: 31,
+    total_amount: 85000000,
+    last_transaction: '2024-03-21T08:45:00Z', 
+    created_at: '2024-03-12T00:00:00Z'
+  },
+  {
+    id: 6,
+    beneficiary_name: 'Vũ Thị Phương',
+    account_type: 'WALLET',
+    bank_code: 'ZALO',
+    bank_name: 'ZaloPay',
+    account_identifier: '0923456789',
+    status: 'ACTIVE',
+    transaction_count: 12,
+    total_amount: 18000000,
+    last_transaction: '2024-03-20T16:10:00Z',
+    created_at: '2024-03-15T00:00:00Z'
+  },
+  {
+    id: 7,
+    beneficiary_name: 'Đặng Minh Quân',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'MB',
+    bank_name: 'MB Bank',
+    account_identifier: '1357924680',
+    status: 'ACTIVE', 
+    transaction_count: 19,
+    total_amount: 45000000,
+    last_transaction: '2024-03-21T07:30:00Z',
+    created_at: '2024-03-18T00:00:00Z'
+  },
+  {
+    id: 8,
+    beneficiary_name: 'Bùi Thị Hương',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'ACB',
+    bank_name: 'ACB',
+    account_identifier: '2468013579',
+    status: 'ACTIVE',
+    transaction_count: 27,
+    total_amount: 72000000,
+    last_transaction: '2024-03-21T11:20:00Z',
+    created_at: '2024-03-19T00:00:00Z'
+  },
+  {
+    id: 9,
+    beneficiary_name: 'Phan Văn Khoa',
+    account_type: 'CARD',
+    bank_code: 'VCB',
+    bank_name: 'Vietcombank',
+    account_identifier: '4222222222222222',
+    status: 'ACTIVE',
+    transaction_count: 5,
+    total_amount: 28000000,
+    last_transaction: '2024-03-20T13:45:00Z',
+    created_at: '2024-03-20T00:00:00Z'
+  },
+  {
+    id: 9,
+    beneficiary_name: 'Công ty TNHH Thương mại Thế Giới Di Động',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'TCB',
+    bank_name: 'Techcombank',
+    account_identifier: '19033324556789',
+    status: 'ACTIVE',
+    transaction_count: 156,
+    total_amount: 850000000,
+    last_transaction: '2024-03-21T08:15:00Z',
+    created_at: '2023-12-15T00:00:00Z'
+  },
+  {
+    id: 10,
+    beneficiary_name: 'Công ty Cổ phần Vàng bạc Đá quý Phú Nhuận (PNJ)',
+    account_type: 'BANK_ACCOUNT', 
+    bank_code: 'VCB',
+    bank_name: 'Vietcombank',
+    account_identifier: '0071000576239',
+    status: 'ACTIVE',
+    transaction_count: 89,
+    total_amount: 670000000,
+    last_transaction: '2024-03-20T14:30:00Z',
+    created_at: '2024-01-05T00:00:00Z'
+  },
+  {
+    id: 11,
+    beneficiary_name: 'Công ty TNHH GRAB Việt Nam',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'BIDV',
+    bank_name: 'BIDV',
+    account_identifier: '21510000157520',
+    status: 'ACTIVE',
+    transaction_count: 234,
+    total_amount: 920000000,
+    last_transaction: '2024-03-21T09:45:00Z',
+    created_at: '2023-11-20T00:00:00Z'
+  },
+  {
+    id: 12,
+    beneficiary_name: 'Công ty Điện lực TP.HCM',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'VCB',
+    bank_name: 'Vietcombank',
+    account_identifier: '0071000776688',
+    status: 'ACTIVE',
+    transaction_count: 178,
+    total_amount: 450000000,
+    last_transaction: '2024-03-20T16:20:00Z',
+    created_at: '2023-10-10T00:00:00Z'
+  },
+  {
+    id: 13,
+    beneficiary_name: 'Công ty Cổ phần FPT',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'TCB',
+    bank_name: 'Techcombank',
+    account_identifier: '19033399887766',
+    status: 'ACTIVE',
+    transaction_count: 145,
+    total_amount: 780000000,
+    last_transaction: '2024-03-21T10:30:00Z',
+    created_at: '2024-02-01T00:00:00Z'
+  },
+  {
+    id: 14,
+    beneficiary_name: 'CÔNG TY TNHH SHOPEE',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'VPB',
+    bank_name: 'VPBank',
+    account_identifier: '166288899977',
+    status: 'ACTIVE',
+    transaction_count: 198,
+    total_amount: 890000000,
+    last_transaction: '2024-03-21T11:15:00Z',
+    created_at: '2023-12-20T00:00:00Z'
+  },
+  {
+    id: 15,
+    beneficiary_name: 'Tổng Công ty Viễn thông Viettel',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'MB',
+    bank_name: 'MB Bank',
+    account_identifier: '0990099887766',
+    status: 'ACTIVE',
+    transaction_count: 167,
+    total_amount: 560000000,
+    last_transaction: '2024-03-20T15:45:00Z',
+    created_at: '2024-01-15T00:00:00Z'
+  },
+  {
+    id: 16,
+    beneficiary_name: 'Công ty TNHH LAZADA Việt Nam',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'ACB',
+    bank_name: 'ACB',
+    account_identifier: '22244466688',
+    status: 'ACTIVE',
+    transaction_count: 156,
+    total_amount: 670000000,
+    last_transaction: '2024-03-21T09:20:00Z',
+    created_at: '2023-11-30T00:00:00Z'
+  },
+  {
+    id: 17,
+    beneficiary_name: 'Công ty Cổ phần Thế Giới Kim Cương',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'TCB',
+    bank_name: 'Techcombank',
+    account_identifier: '19033388776655',
+    status: 'ACTIVE',
+    transaction_count: 89,
+    total_amount: 920000000,
+    last_transaction: '2024-03-20T14:50:00Z',
+    created_at: '2024-02-10T00:00:00Z'
+  },
+  {
+    id: 18,
+    beneficiary_name: 'Công ty TNHH TIKI',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'VCB',
+    bank_name: 'Vietcombank',
+    account_identifier: '0071000887766',
+    status: 'ACTIVE',
+    transaction_count: 178,
+    total_amount: 780000000,
+    last_transaction: '2024-03-21T10:45:00Z',
+    created_at: '2023-12-05T00:00:00Z'
+  },
+  {
+    id: 19,
+    beneficiary_name: 'Công ty Cổ phần Vinamilk',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'BIDV',
+    bank_name: 'BIDV',
+    account_identifier: '11510000679123',
+    status: 'ACTIVE',
+    transaction_count: 245,
+    total_amount: 1250000000,
+    last_transaction: '2024-03-21T11:30:00Z',
+    created_at: '2023-11-15T00:00:00Z'
+  },
+  {
+    id: 20,
+    beneficiary_name: 'Tập đoàn Công nghiệp Than - Khoáng sản Việt Nam',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'VCB',
+    bank_name: 'Vietcombank',
+    account_identifier: '0011004399123',
+    status: 'ACTIVE',
+    transaction_count: 189,
+    total_amount: 890000000,
+    last_transaction: '2024-03-21T10:15:00Z',
+    created_at: '2024-01-20T00:00:00Z'
+  },
+  {
+    id: 21,
+    beneficiary_name: 'Công ty TNHH Yamaha Motor Việt Nam',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'MB',
+    bank_name: 'MB Bank',
+    account_identifier: '0990012345678',
+    status: 'ACTIVE',
+    transaction_count: 167,
+    total_amount: 750000000,
+    last_transaction: '2024-03-21T09:45:00Z',
+    created_at: '2023-12-10T00:00:00Z'
+  },
+  {
+    id: 22,
+    beneficiary_name: 'Công ty TNHH Samsung Electronics Việt Nam',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'TCB',
+    bank_name: 'Techcombank',
+    account_identifier: '19033388990011',
+    status: 'ACTIVE',
+    transaction_count: 278,
+    total_amount: 1450000000,
+    last_transaction: '2024-03-21T08:30:00Z',
+    created_at: '2023-11-25T00:00:00Z'
+  },
+  {
+    id: 23,
+    beneficiary_name: 'Tổng Công ty Hàng không Việt Nam',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'VCB',
+    bank_name: 'Vietcombank',
+    account_identifier: '0011004488990',
+    status: 'ACTIVE',
+    transaction_count: 198,
+    total_amount: 980000000,
+    last_transaction: '2024-03-21T11:00:00Z',
+    created_at: '2024-02-15T00:00:00Z'
+  },
+  {
+    id: 24,
+    beneficiary_name: 'Công ty CP Sữa TH True Milk',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'BIDV',
+    bank_name: 'BIDV',
+    account_identifier: '11510000887766',
+    status: 'ACTIVE',
+    transaction_count: 145,
+    total_amount: 670000000,
+    last_transaction: '2024-03-21T10:45:00Z',
+    created_at: '2024-01-10T00:00:00Z'
+  },
+  {
+    id: 25,
+    beneficiary_name: 'Tập đoàn Dầu khí Việt Nam (PVN)',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'VCB',
+    bank_name: 'Vietcombank',
+    account_identifier: '0011004477889',
+    status: 'ACTIVE',
+    transaction_count: 234,
+    total_amount: 1680000000,
+    last_transaction: '2024-03-21T09:30:00Z',
+    created_at: '2023-12-01T00:00:00Z'
+  },
+  {
+    id: 26,
+    beneficiary_name: 'Công ty CP Thép Hòa Phát',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'TCB',
+    bank_name: 'Techcombank',
+    account_identifier: '19033377889900',
+    status: 'ACTIVE',
+    transaction_count: 167,
+    total_amount: 890000000,
+    last_transaction: '2024-03-21T08:45:00Z',
+    created_at: '2024-02-05T00:00:00Z'
+  },
+  {
+    id: 27,
+    beneficiary_name: 'Tập đoàn Công nghiệp Cao su Việt Nam',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'BIDV',
+    bank_name: 'BIDV',
+    account_identifier: '11510000998877',
+    status: 'ACTIVE',
+    transaction_count: 156,
+    total_amount: 750000000,
+    last_transaction: '2024-03-21T11:45:00Z',
+    created_at: '2023-11-10T00:00:00Z'
+  },
+  {
+    id: 28,
+    beneficiary_name: 'Tổng Công ty Điện lực Dầu khí Việt Nam',
+    account_type: 'BANK_ACCOUNT',
+    bank_code: 'VCB',
+    bank_name: 'Vietcombank',
+    account_identifier: '0011004466778',
+    status: 'ACTIVE',
+    transaction_count: 189,
+    total_amount: 980000000,
+    last_transaction: '2024-03-21T10:30:00Z',
+    created_at: '2024-01-25T00:00:00Z'
   }
 ]
 
@@ -625,9 +977,52 @@ const handleToggleStatus = (record: any) => {
   message.success(`Đã ${newStatus === 'ACTIVE' ? 'kích hoạt' : 'khóa'} người thụ hưởng`)
 }
 
-const handleViewTransactions = (record: any) => {
+const handleViewTransactions = (record) => {
   selectedBeneficiary.value = record
   showHistoryDrawer.value = true
+  
+  // Khởi tạo dữ liệu ngay khi mở drawer
+  const days = parseInt(historyTimeRange.value)
+  transactionHistory.value = generateMockTransactions(days)
+  
+  // Cập nhật dữ liệu biểu đồ
+  const chartData = transactionHistory.value.reduce((acc, transaction) => {
+    const date = new Date(transaction.created_at)
+    const dayKey = date.toLocaleDateString('vi-VN', { weekday: 'short' })
+    
+    if (!acc[dayKey]) {
+      acc[dayKey] = {
+        inflow: 0,
+        outflow: 0
+      }
+    }
+    
+    if (transaction.type === 'RECEIVE') {
+      acc[dayKey].inflow += transaction.amount
+    } else {
+      acc[dayKey].outflow += transaction.amount
+    }
+    
+    return acc
+  }, {})
+  
+  // Cập nhật option cho biểu đồ
+  transactionChartOption.value = {
+    ...transactionChartOption.value,
+    xAxis: {
+      data: Object.keys(chartData)
+    },
+    series: [
+      {
+        name: 'Tiền vào',
+        data: Object.values(chartData).map(d => d.inflow)
+      },
+      {
+        name: 'Tiền ra', 
+        data: Object.values(chartData).map(d => d.outflow)
+      }
+    ]
+  }
 }
 
 const handleQuickTransfer = (record: any) => {
@@ -692,11 +1087,193 @@ const filteredBeneficiaries = computed(() => {
   })
 })
 
+// Thêm hàm cập nhật số liệu realtime
+const updateRealtimeStats = () => {
+  const hour = new Date().getHours()
+  let activityMultiplier = 1
+
+  // Điều chỉnh hệ số hoạt động theo giờ
+  if (hour >= 9 && hour <= 11) activityMultiplier = 1.5 // Cao điểm sáng
+  else if (hour >= 13 && hour <= 16) activityMultiplier = 1.3 // Cao điểm chiều  
+  else if (hour >= 22 || hour <= 5) activityMultiplier = 0.3 // Đêm khuya
+
+  // Cập nhật số liệu thống kê
+  stats.forEach(stat => {
+    switch(stat.title) {
+      case 'Tổng người thụ hưởng':
+        if (Math.random() > 0.7) { // 30% cơ hội tăng
+          stat.value += Math.floor(Math.random() * 3) * activityMultiplier
+          stat.trend = +(Math.random() * 2 + 10).toFixed(1)
+        }
+        break
+      case 'Số tài khoản ngân hàng':
+        if (Math.random() > 0.8) { // 20% cơ hội tăng
+          stat.value += Math.floor(Math.random() * 2) * activityMultiplier
+          stat.trend = +(Math.random() * 3 + 5).toFixed(1)
+        }
+        break
+      case 'Giao dịch tháng này':
+        stat.value += Math.floor(Math.random() * 5 * activityMultiplier)
+        stat.trend = +(Math.random() * 5 + 10).toFixed(1)
+        break
+      case 'Đang chờ xác thực':
+        if (Math.random() > 0.9) { // 10% cơ hội tăng
+          stat.value += Math.floor(Math.random() * 2)
+          stat.trend = +(Math.random() * 10 - 5).toFixed(1)
+        }
+        break
+    }
+  })
+
+  // Cập nhật số liệu giao dịch cho người thụ hưởng
+  beneficiaries.value.forEach(beneficiary => {
+    if (beneficiary.status === 'ACTIVE' && Math.random() > 0.7) {
+      const transactionAmount = Math.floor(Math.random() * 10000000 * activityMultiplier)
+      beneficiary.transaction_count += 1
+      beneficiary.total_amount += transactionAmount
+      beneficiary.last_transaction = new Date().toISOString()
+    }
+  })
+}
+
+// Thêm vào onMounted
 onMounted(() => {
-  handleRefresh()
+  // Khởi tạo dữ liệu
+  beneficiaries.value = mockBeneficiaries
+  
+  // Cập nhật số liệu mỗi giây
+  const statsInterval = setInterval(updateRealtimeStats, 1000)
+  
+  onUnmounted(() => {
+    clearInterval(statsInterval)
+  })
 })
 
 definePageMeta({
   layout: 'admin'
 })
+
+const generateMockTransactions = (days: number) => {
+  const transactions = []
+  const now = new Date()
+  
+  for (let i = 0; i < 20; i++) {
+    const date = new Date(now.getTime() - Math.random() * days * 24 * 60 * 60 * 1000)
+    const type = Math.random() > 0.5 ? 'SEND' : 'RECEIVE'
+    
+    transactions.push({
+      id: i + 1,
+      type,
+      amount: Math.floor(Math.random() * 15000000) + 1000000, // 1M - 15M VND
+      description: type === 'SEND' 
+        ? 'Chuyển tiền - Thanh toán hóa đơn'
+        : 'Nhận tiền hoàn trả',
+      created_at: date.toISOString()
+    })
+  }
+  
+  // Sắp xếp theo thời gian mới nhất
+  return transactions.sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )
+}
+
+watch(historyTimeRange, (newRange) => {
+  const days = parseInt(newRange)
+  transactionHistory.value = generateMockTransactions(days)
+  
+  // Cập nhật dữ liệu biểu đồ
+  const chartData = transactionHistory.value.reduce((acc, transaction) => {
+    const date = new Date(transaction.created_at)
+    const dayKey = date.toLocaleDateString('vi-VN', { weekday: 'short' })
+    
+    if (!acc[dayKey]) {
+      acc[dayKey] = {
+        inflow: 0,
+        outflow: 0
+      }
+    }
+    
+    if (transaction.type === 'RECEIVE') {
+      acc[dayKey].inflow += transaction.amount
+    } else {
+      acc[dayKey].outflow += transaction.amount
+    }
+    
+    return acc
+  }, {})
+  
+  // Cập nhật option cho biểu đồ
+  transactionChartOption.value = {
+    // ... các option khác giữ nguyên
+    xAxis: {
+      data: Object.keys(chartData)
+    },
+    series: [
+      {
+        name: 'Tiền vào',
+        data: Object.values(chartData).map(d => d.inflow)
+      },
+      {
+        name: 'Tiền ra', 
+        data: Object.values(chartData).map(d => d.outflow)
+      }
+    ]
+  }
+})
+
+const filteredTransactions = computed(() => {
+  const days = parseInt(historyTimeRange.value)
+  const cutoffDate = new Date()
+  cutoffDate.setDate(cutoffDate.getDate() - days)
+  
+  return transactionHistory.value.filter(transaction => 
+    new Date(transaction.created_at) > cutoffDate
+  )
+})
+
+watch(showHistoryDrawer, (newValue) => {
+  if (newValue) {
+    // Khi drawer mở, khởi tạo lại dữ liệu với khoảng thời gian hiện tại
+    const days = parseInt(historyTimeRange.value)
+    transactionHistory.value = generateMockTransactions(days)
+  }
+})
+
+const bankLogos = {
+  VCB: 'https://cdn.tuoitre.vn/thumb_w/600/471584752817336320/2023/2/23/29229888323456029822604684420721366064172575n-16771238637691533081421.jpg',
+  TCB: 'https://s3-symbol-logo.tradingview.com/techcombank--600.png', 
+  BIDV: 'https://inkythuatso.com/uploads/thumbnails/800/2021/10/logo-bidv-inkythuatso-22-08-48-55.jpg',
+  VPB: 'https://cdn.haitrieu.com/wp-content/uploads/2022/01/Icon-VPBank.png',
+  MB: 'https://cdn.haitrieu.com/wp-content/uploads/2022/02/Icon-MB-Bank-MBB.png',
+  ACB: 'https://cdn.haitrieu.com/wp-content/uploads/2022/01/Logo-ACB-Ori.png',
+  TPB: 'https://cdn.haitrieu.com/wp-content/uploads/2022/02/Icon-TPBank.png'
+}
+
+// Cho các ví điện tử
+const eWalletLogos = {
+  MOMO: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-MoMo-Square.png',
+  ZALO: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQe6SEQ293X0nfFojf6nsCWKA8dNGOrqn21jg&s',
+  ZALOPAY: 'https://play-lh.googleusercontent.com/NfFBz1Rxk0nQ7RsOk0kXbi1AEp1ZJ3rzJHbwRlHsZ_BIAHJeBn-UzR45JJUBGTVnQ8N-',
+  VNPAY: 'https://download.logo.wine/logo/VNPAY/VNPAY-Logo.wine.png'
+}
+
+const getBankLogo = (record) => {
+  console.log('Record type:', record.account_type)
+  console.log('Bank code:', record.bank_code)
+  
+  if (record.account_type === 'WALLET') {
+    const walletCode = record.bank_code.toUpperCase()
+    console.log('Wallet logo URL:', eWalletLogos[walletCode])
+    return eWalletLogos[walletCode] || '/default-wallet-logo.png'
+  }
+  
+  console.log('Bank logo URL:', bankLogos[record.bank_code])
+  return bankLogos[record.bank_code] || '/default-bank-logo.png'
+}
+
+const handleImageError = (e) => {
+  // Khi ảnh lỗi sẽ hiển thị ảnh mặc định
+  e.target.src = '/default-bank-logo.png'
+}
 </script>

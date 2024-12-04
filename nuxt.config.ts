@@ -9,13 +9,15 @@ export default defineNuxtConfig({
     '@/plugins/antd',
     '@/plugins/fetch'
   ],
-
+  vite: {
+    // Các tùy chọn cấu hình cho Vite
+  },
   css: [
     '@/assets/css/main.css'
   ],
   devtools: {
     timeline: {
-      enabled: true
+      enabled: false
     }
   },
   devServer: {

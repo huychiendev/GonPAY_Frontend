@@ -213,7 +213,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import {
   SettingOutlined, PlusOutlined, ReloadOutlined, DownloadOutlined,
   EditOutlined, HistoryOutlined, PoweroffOutlined,
@@ -222,13 +222,19 @@ import {
 import { message } from 'ant-design-vue'
 
 // Mock Data
+const generateAvatar = (seed: string) => {
+  // Các style có thể dùng: 'adventurer', 'avataaars', 'bottts', 'initials', 'micah'
+  const style = 'avataaars' 
+  return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(seed)}`
+}
+
 const mockLimits = [
   {
     id: 1,
     user: {
       name: 'Nguyễn Văn A',
       email: 'nguyenvana@gmail.com',
-      avatar: '/api/placeholder/32/32'
+      avatar: generateAvatar('Nguyễn Văn A')
     },
     transaction_type: 'TRANSFER',
     daily_limit: 50000000,
@@ -236,14 +242,14 @@ const mockLimits = [
     monthly_limit: 1000000000,
     monthly_used: 350000000,
     status: 'ACTIVE',
-    created_at: '2024-11-20'
+    created_at: '2024-03-20'
   },
   {
-    id: 2,
+    id: 2, 
     user: {
       name: 'Trần Thị B',
-      email: 'tranthib@gmail.com',
-      avatar: '/api/placeholder/32/32'
+      email: 'tranthib@gmail.com', 
+      avatar: generateAvatar('Trần Thị B')
     },
     transaction_type: 'WITHDRAW',
     daily_limit: 20000000,
@@ -251,7 +257,262 @@ const mockLimits = [
     monthly_limit: 500000000,
     monthly_used: 200000000,
     status: 'ACTIVE',
-    created_at: '2024-11-19'
+    created_at: '2024-03-19'
+  },
+  {
+    id: 3,
+    user: {
+      name: 'Công ty TNHH Phát Đạt',
+      email: 'info@phatdat.com',
+      avatar: generateAvatar('Công ty TNHH Phát Đạt')
+    },
+    transaction_type: 'TRANSFER',
+    daily_limit: 200000000,
+    daily_used: 150000000,
+    monthly_limit: 5000000000,
+    monthly_used: 2500000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-18'
+  },
+  {
+    id: 4,
+    user: {
+      name: 'Lê Thị Hương',
+      email: 'lehuong@gmail.com',
+      avatar: generateAvatar('Lê Thị Hương')
+    },
+    transaction_type: 'DEPOSIT',
+    daily_limit: 100000000,
+    daily_used: 25000000,
+    monthly_limit: 2000000000,
+    monthly_used: 800000000,
+    status: 'INACTIVE',
+    created_at: '2024-03-17'
+  },
+  {
+    id: 5,
+    user: {
+      name: 'Phạm Văn Minh',
+      email: 'pvanminh@gmail.com',
+      avatar: generateAvatar('Phạm Văn Minh')
+    },
+    transaction_type: 'WITHDRAW',
+    daily_limit: 30000000,
+    daily_used: 28000000,
+    monthly_limit: 800000000,
+    monthly_used: 600000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-16'
+  },
+  {
+    id: 6,
+    user: {
+      name: 'Công ty CP Thương mại Sài Gòn',
+      email: 'contact@saigontrade.com',
+      avatar: generateAvatar('Công ty CP Thương mại Sài Gòn')
+    },
+    transaction_type: 'TRANSFER',
+    daily_limit: 500000000,
+    daily_used: 320000000,
+    monthly_limit: 10000000000,
+    monthly_used: 7000000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-15'
+  },
+  {
+    id: 7,
+    user: {
+      name: 'Đặng Thị Mai',
+      email: 'dangmai@gmail.com',
+      avatar: generateAvatar('Đặng Thị Mai')
+    },
+    transaction_type: 'DEPOSIT',
+    daily_limit: 50000000,
+    daily_used: 10000000,
+    monthly_limit: 1000000000,
+    monthly_used: 300000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-14'
+  },
+  {
+    id: 8,
+    user: {
+      name: 'Hoàng Văn Thành',
+      email: 'hvthanh@gmail.com',
+      avatar: generateAvatar('Hoàng Văn Thành')
+    },
+    transaction_type: 'WITHDRAW',
+    daily_limit: 25000000,
+    daily_used: 20000000,
+    monthly_limit: 600000000,
+    monthly_used: 450000000,
+    status: 'INACTIVE',
+    created_at: '2024-03-13'
+  },
+  {
+    id: 9,
+    user: {
+      name: 'Nguyễn Thị Lan Anh',
+      email: 'lananh@gmail.com',
+      avatar: generateAvatar('Nguyễn Thị Lan Anh')
+    },
+    transaction_type: 'TRANSFER',
+    daily_limit: 100000000,
+    daily_used: 80000000,
+    monthly_limit: 2000000000,
+    monthly_used: 1500000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-12'
+  },
+  {
+    id: 10,
+    user: {
+      name: 'Công ty TNHH Thương mại Điện máy ABC',
+      email: 'contact@abcelectro.com.vn',
+      avatar: generateAvatar('Công ty TNHH Thương mại Điện máy ABC')
+    },
+    transaction_type: 'TRANSFER',
+    daily_limit: 1000000000,
+    daily_used: 750000000,
+    monthly_limit: 20000000000,
+    monthly_used: 15000000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-11'
+  },
+  {
+    id: 11,
+    user: {
+      name: 'Siêu thị Bách hóa VinMart',
+      email: 'operations@vinmart.vn',
+      avatar: generateAvatar('Siêu thị Bách hóa VinMart')
+    },
+    transaction_type: 'DEPOSIT',
+    daily_limit: 2000000000,
+    daily_used: 1200000000,
+    monthly_limit: 50000000000,
+    monthly_used: 35000000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-10'
+  },
+  {
+    id: 12,
+    user: {
+      name: 'Nhà hàng Phở 24',
+      email: 'info@pho24.com.vn',
+      avatar: generateAvatar('Nhà hàng Phở 24')
+    },
+    transaction_type: 'WITHDRAW',
+    daily_limit: 50000000,
+    daily_used: 35000000,
+    monthly_limit: 1500000000,
+    monthly_used: 900000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-09'
+  },
+  {
+    id: 13,
+    user: {
+      name: 'Công ty Du lịch Vietravel',
+      email: 'booking@vietravel.com.vn',
+      avatar: generateAvatar('Công ty Du lịch Vietravel')
+    },
+    transaction_type: 'TRANSFER',
+    daily_limit: 500000000,
+    daily_used: 350000000,
+    monthly_limit: 10000000000,
+    monthly_used: 7000000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-08'
+  },
+  {
+    id: 14,
+    user: {
+      name: 'Trường THPT Lê Hồng Phong',
+      email: 'thptlehongphong@edu.vn',
+      avatar: generateAvatar('Trường THPT Lê Hồng Phong')
+    },
+    transaction_type: 'DEPOSIT',
+    daily_limit: 200000000,
+    daily_used: 50000000,
+    monthly_limit: 5000000000,
+    monthly_used: 2000000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-07'
+  },
+  {
+    id: 15,
+    user: {
+      name: 'Bệnh viện Đa khoa Trung ương',
+      email: 'info@centralhosp.vn',
+      avatar: generateAvatar('Bệnh viện Đa khoa Trung ương')
+    },
+    transaction_type: 'TRANSFER',
+    daily_limit: 1000000000,
+    daily_used: 800000000,
+    monthly_limit: 30000000000,
+    monthly_used: 20000000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-06'
+  },
+  {
+    id: 16,
+    user: {
+      name: 'Công ty Xây dựng Hoàng Gia',
+      email: 'contact@hoanggia.com.vn',
+      avatar: generateAvatar('Công ty Xây dựng Hoàng Gia')
+    },
+    transaction_type: 'WITHDRAW',
+    daily_limit: 300000000,
+    daily_used: 250000000,
+    monthly_limit: 8000000000,
+    monthly_used: 6000000000,
+    status: 'INACTIVE',
+    created_at: '2024-03-05'
+  },
+  {
+    id: 17,
+    user: {
+      name: 'Cửa hàng Nội thất TADA',
+      email: 'sales@tadafurniture.vn',
+      avatar: generateAvatar('Cửa hàng Nội thất TADA')
+    },
+    transaction_type: 'TRANSFER',
+    daily_limit: 150000000,
+    daily_used: 100000000,
+    monthly_limit: 3000000000,
+    monthly_used: 2000000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-04'
+  },
+  {
+    id: 18,
+    user: {
+      name: 'Công ty TNHH Logistics Sao Việt',
+      email: 'ops@saovietlogistics.com',
+      avatar: generateAvatar('Công ty TNHH Logistics Sao Việt')
+    },
+    transaction_type: 'DEPOSIT',
+    daily_limit: 800000000,
+    daily_used: 600000000,
+    monthly_limit: 15000000000,
+    monthly_used: 10000000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-03'
+  },
+  {
+    id: 19,
+    user: {
+      name: 'Nhà thuốc Long Châu',
+      email: 'pharmacy@longchau.vn',
+      avatar: generateAvatar('Nhà thuốc Long Châu')
+    },
+    transaction_type: 'WITHDRAW',
+    daily_limit: 100000000,
+    daily_used: 80000000,
+    monthly_limit: 2500000000,
+    monthly_used: 1800000000,
+    status: 'ACTIVE',
+    created_at: '2024-03-02'
   }
 ]
 
@@ -553,9 +814,66 @@ const filteredLimits = computed(() => {
   })
 })
 
+// Thêm hàm cập nhật số liệu realtime
+const updateRealtimeStats = () => {
+  const hour = new Date().getHours()
+  let activityMultiplier = 1
+
+  // Điều chỉnh hệ số hoạt động theo giờ
+  if (hour >= 9 && hour <= 11) activityMultiplier = 1.5 // Cao điểm sáng
+  else if (hour >= 13 && hour <= 16) activityMultiplier = 1.3 // Cao điểm chiều
+  else if (hour >= 22 || hour <= 5) activityMultiplier = 0.3 // Đêm khuya
+
+  // Cập nhật số liệu thống kê
+  stats.forEach(stat => {
+    switch(stat.title) {
+      case 'Tổng hạn mức':
+        if (Math.random() > 0.7) { // 30% cơ hội tăng
+          stat.value += Math.floor(Math.random() * 2) * activityMultiplier
+          stat.trend = +(Math.random() * 2 + 4).toFixed(1)
+        }
+        break
+      case 'Cảnh báo vượt hạn mức':
+        if (Math.random() > 0.8) { // 20% cơ hội thay đổi
+          const change = Math.random() > 0.5 ? 1 : -1
+          stat.value = Math.max(0, stat.value + change)
+          stat.trend = +(Math.random() * 4 - 2).toFixed(1)
+        }
+        break
+      case 'Tỷ lệ tuân thủ':
+        stat.value = +(92 + Math.random() * 3).toFixed(1) // Dao động 92-95%
+        stat.trend = +(Math.random() * 3).toFixed(1)
+        break
+      case 'Đang chờ duyệt':
+        if (Math.random() > 0.8) { // 20% cơ hội thay đổi
+          const change = Math.random() > 0.6 ? 1 : -1
+          stat.value = Math.max(0, stat.value + change)
+        }
+        break
+    }
+  })
+
+  // Cập nhật số liệu sử dụng hạn mức
+  limits.value.forEach(limit => {
+    if (limit.status === 'ACTIVE') {
+      // Tăng số tiền đã sử dụng theo thời gian thực
+      const dailyIncrease = Math.floor(Math.random() * 1000000 * activityMultiplier)
+      const monthlyIncrease = dailyIncrease
+
+      limit.daily_used = Math.min(limit.daily_limit, limit.daily_used + dailyIncrease)
+      limit.monthly_used = Math.min(limit.monthly_limit, limit.monthly_used + monthlyIncrease)
+    }
+  })
+}
+
 // Lifecycle
 onMounted(() => {
-  handleRefresh()
+  // Cập nhật số liệu mỗi giây
+  const statsInterval = setInterval(updateRealtimeStats, 1000)
+  
+  onUnmounted(() => {
+    clearInterval(statsInterval)
+  })
 })
 
 definePageMeta({
