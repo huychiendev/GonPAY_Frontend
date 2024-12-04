@@ -3,8 +3,8 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxtjs/tailwindcss',
-    '@pinia/nuxt', 
-  ], 
+    '@pinia/nuxt',
+  ],
 
   plugins: [
     '@/plugins/antd',
@@ -32,7 +32,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-19',
   runtimeConfig: {
     public: {
-      apiBase: 'http://localhost:8080'
+      apiBase: 'https://gonpay-backend-2.onrender.com'
     }
   },
   router: {

@@ -89,7 +89,7 @@ const handleSubmit = async () => {
     error.value = ''
     loading.value = true
 
-    const { data, error: apiError } = await fetchApi<LoginResponse>('http://localhost:8080/api/login', {
+    const { data, error: apiError } = await fetchApi<LoginResponse>('https://gonpay-backend-2.onrender.com/api/login', {
       method: 'POST',
       body: formState
     })
