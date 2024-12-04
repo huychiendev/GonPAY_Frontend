@@ -45,30 +45,41 @@ const router = useRouter()
 const { fetchApi } = useApi()
 const loading = ref(false)
 
-const formState = reactive({
-    username: '',
+interface RegisterRequest {
+    email: string;
+    password: string;
+    name: string;
+    phone: string;
+}
+
+const formState = reactive<RegisterRequest>({
     email: '',
-    phone_number: '',
-    password: ''
+    password: '',
+    name: '',
+    phone: ''
 })
 
 const rules = {
-    username: [{ required: true, message: 'Vui lòng nhập tên đăng nhập' }],
     email: [
         { required: true, message: 'Vui lòng nhập email' },
         { type: 'email', message: 'Email không hợp lệ' }
     ],
-    phone_number: [{ required: true, message: 'Vui lòng nhập số điện thoại' }],
     password: [
         { required: true, message: 'Vui lòng nhập mật khẩu' },
         { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' }
+    ],
+    name: [
+        { required: true, message: 'Vui lòng nhập họ tên' }
+    ],
+    phone: [
+        { required: true, message: 'Vui lòng nhập số điện thoại' }
     ]
 }
 
 const handleSubmit = async () => {
     try {
         loading.value = true
-        const { data, error } = await fetchApi('/register', {
+        const { data, error } = await fetchApi('https://gonpay-backend-2.onrender.com/api/register', {
             method: 'POST',
             body: formState
         })
